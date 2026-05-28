@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>RevitMCP</Name>
+    <Assembly>RevitMCP.dll</Assembly>
+    <FullClassName>RevitMCP.App</FullClassName>
+    <ClientId>a1b2c3d4-e5f6-7890-abcd-ef1234567890</ClientId>
+    <VendorId>UV-TECHS</VendorId>
+    <VendorDescription>UV Techs - Revit MCP Bridge</VendorDescription>
+  </AddIn>
+</RevitAddIns>

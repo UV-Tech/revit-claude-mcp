@@ -1,0 +1,33 @@
+{
+  "name": "revit-mcp-server",
+  "version": "2.0.0",
+  "description": "Local MCP server for controlling Revit 2026 through the RevitMCP addin.",
+  "type": "module",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "revit",
+    "mcp",
+    "model-context-protocol",
+    "bim",
+    "aec",
+    "autodesk"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

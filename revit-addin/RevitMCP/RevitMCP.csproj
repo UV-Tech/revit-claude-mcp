@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyName>RevitMCP</AssemblyName>
+    <RootNamespace>RevitMCP</RootNamespace>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <Target Name="CopyToRevitAddins" AfterTargets="Build">
+    <PropertyGroup>
+      <RevitAddinsDir>$(APPDATA)\Autodesk\Revit\Addins\2026\</RevitAddinsDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(RevitAddinsDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RevitAddinsDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(ProjectDir)RevitMCP.addin" DestinationFolder="$(RevitAddinsDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <!-- These must point to your Revit 2026 installation -->
+    <Reference Include="RevitAPI">
+      <HintPath>C:\Program Files\Autodesk\Revit 2026\RevitAPI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>C:\Program Files\Autodesk\Revit 2026\RevitAPIUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,32 @@
+# Dependencies
+mcp-server/node_modules/
+
+# Build output
+mcp-server/dist/
+revit-addin/**/bin/
+revit-addin/**/obj/
+
+# Local editor and OS files
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# Local Revit/project artifacts
+*.rvt
+*.rfa
+*.rte
+*.000*.rvt
+Exports/
+
+# Ruflo/local agent state
+.swarm/
+ruvector.db
