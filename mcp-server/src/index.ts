@@ -47,7 +47,7 @@ async function revit(
 // ─── Server ──────────────────────────────────────────────────────────────────
 
 const server = new McpServer({
-  name: "revit-mcp",
+  name: "revit-claude-mcp",
   version: "2.0.0",
 });
 

@@ -1,4 +1,4 @@
-# Contributing to RevitMCP
+# Contributing to Revit Claude MCP
 
 Thanks for helping make Revit automation more open and useful.
 

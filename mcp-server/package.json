@@ -1,7 +1,7 @@
 {
-  "name": "revit-mcp-server",
+  "name": "revit-claude-mcp-server",
   "version": "2.0.0",
-  "description": "Local MCP server for controlling Revit 2026 through the RevitMCP addin.",
+  "description": "Local MCP server for controlling Revit 2026 from Claude through the Revit Claude MCP addin.",
   "type": "module",
   "main": "dist/index.js",
   "license": "MIT",
@@ -16,6 +16,7 @@
   },
   "keywords": [
     "revit",
+    "claude",
     "mcp",
     "model-context-protocol",
     "bim",

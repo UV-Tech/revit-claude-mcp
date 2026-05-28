@@ -12,14 +12,14 @@ Send a private report to the project maintainer once a public repository owner i
 
 Include:
 
-- RevitMCP version or commit.
+- Revit Claude MCP version or commit.
 - Operating system and Revit version.
 - Steps to reproduce.
 - Expected and actual impact.
 
 ## Localhost Boundary
 
-RevitMCP is designed as a local bridge:
+Revit Claude MCP is designed as a local bridge:
 
 - The Revit addin listens on `localhost:6543`.
 - Do not expose this port to a network.
