@@ -27,6 +27,6 @@ jobs:
         working-directory: mcp-server
         run: npm ci
 
-      - name: Typecheck and build
+      - name: Test
         working-directory: mcp-server
-        run: npm run typecheck && npm run build
+        run: npm test

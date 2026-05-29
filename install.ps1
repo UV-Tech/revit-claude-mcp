@@ -41,8 +41,8 @@ if (-not $SkipNodeInstall) {
             npm install
         }
 
-        npm run build
-        Write-Host "MCP server built OK" -ForegroundColor Green
+        npm test
+        Write-Host "MCP server built and tested OK" -ForegroundColor Green
     }
     finally {
         Pop-Location

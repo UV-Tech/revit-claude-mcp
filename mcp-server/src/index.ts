@@ -1,48 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { resolveRevitBridgeConfig, revit, revitHealth } from "./bridge.js";
 
-const REVIT_HOST = process.env.REVIT_HOST ?? "http://localhost:6543";
-const REVIT_TIMEOUT_MS = Number(process.env.REVIT_TIMEOUT_MS ?? "120000");
-
-// ─── Revit HTTP bridge helper ────────────────────────────────────────────────
-
-async function revit(
-  action: string,
-  payload: Record<string, unknown> = {}
-): Promise<unknown> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REVIT_TIMEOUT_MS);
-
-  let res: Response;
-  try {
-    res = await fetch(`${REVIT_HOST}/api/${action}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-  } catch (e) {
-    if (e instanceof Error && e.name === "AbortError") {
-      throw new Error(
-        `Timed out after ${REVIT_TIMEOUT_MS} ms waiting for Revit action '${action}'.`
-      );
-    }
-
-    throw new Error(
-      `Cannot reach Revit addin at ${REVIT_HOST}. Make sure Revit 2026 is open and the RevitMCP addin is loaded.`
-    );
-  } finally {
-    clearTimeout(timeout);
-  }
-
-  const body = await res.json().catch(() => ({ error: "Non-JSON response from addin" }));
-  if (!res.ok) {
-    const msg = (body as { error?: string }).error ?? res.statusText;
-    throw new Error(`Revit addin error (${res.status}): ${msg}`);
-  }
-  return body;
-}
+const bridgeConfig = resolveRevitBridgeConfig();
 
 // ─── Server ──────────────────────────────────────────────────────────────────
 
@@ -50,6 +11,31 @@ const server = new McpServer({
   name: "revit-claude-mcp",
   version: "2.0.0",
 });
+
+// ════════════════════════════════════════════════════════════════════════════
+// CONNECTION / DIAGNOSTIC TOOLS
+// ════════════════════════════════════════════════════════════════════════════
+
+server.registerTool(
+  "revit_health_check",
+  {
+    description:
+      "Check whether the local RevitMCP addin bridge is reachable before running model read/write tools. Returns bridge host, timeout, and addin /healthz response.",
+    inputSchema: {},
+    annotations: { readOnlyHint: true },
+  },
+  async () => {
+    const data = await revitHealth(bridgeConfig);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({ host: bridgeConfig.host, timeoutMs: bridgeConfig.timeoutMs, health: data }, null, 2),
+        },
+      ],
+    };
+  }
+);
 
 // ════════════════════════════════════════════════════════════════════════════
 // READ / QUERY TOOLS

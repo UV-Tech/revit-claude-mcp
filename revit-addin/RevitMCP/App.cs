@@ -1,3 +1,4 @@
+using System;
 using Autodesk.Revit.UI;
 
 namespace RevitMCP;
@@ -14,11 +15,22 @@ public class App : IExternalApplication
     public Result OnStartup(UIControlledApplication application)
     {
         UiApp = application;
-        _server = new RevitHttpServer(application);
-        _server.Start();
 
-        TaskDialog.Show("RevitMCP", "RevitMCP bridge started on http://localhost:6543");
-        return Result.Succeeded;
+        try
+        {
+            _server = new RevitHttpServer(application);
+            _server.Start();
+
+            if (Environment.GetEnvironmentVariable("REVIT_MCP_SHOW_STARTUP_DIALOG") == "1")
+                TaskDialog.Show("RevitMCP", "RevitMCP bridge started on http://localhost:6543");
+
+            return Result.Succeeded;
+        }
+        catch (Exception ex)
+        {
+            TaskDialog.Show("RevitMCP", $"Failed to start RevitMCP bridge on http://localhost:6543\n\n{ex.Message}");
+            return Result.Failed;
+        }
     }
 
     public Result OnShutdown(UIControlledApplication application)

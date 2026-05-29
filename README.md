@@ -10,7 +10,7 @@
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4)](https://dotnet.microsoft.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Revit Claude MCP lets Claude read, modify, export, audit, and coordinate Revit models through 39 local tools.**
+**Revit Claude MCP lets Claude read, modify, export, audit, and coordinate Revit models through 40 local tools.**
 
 [Quick Start](#quick-start) - [Features](#features) - [Example Prompts](#example-prompts) - [Architecture](#architecture) - [Contributing](CONTRIBUTING.md)
 
@@ -48,13 +48,17 @@ The installer builds the Node MCP server, builds the Revit addin, and copies the
 
 1. Open Revit 2026.
 2. Open your `.rvt` project.
-3. Confirm the `RevitMCP bridge started` dialog appears.
+3. Check the health endpoint below, or call `revit_health_check` from your MCP client.
 
 Health check:
 
 ```text
 http://localhost:6543/healthz
 ```
+
+The health response includes service version, startup time, uptime, queue timeout, Revit API timeout, and request-size limit so MCP clients can diagnose bridge state before running model operations.
+
+The addin no longer shows a startup dialog by default. If you want a visible startup confirmation, set `REVIT_MCP_SHOW_STARTUP_DIALOG=1` before launching Revit.
 
 ### 3. Connect Claude
 
@@ -74,6 +78,10 @@ Add this to your Claude Desktop or Claude Code MCP config, adjusting the path:
   }
 }
 ```
+
+Optional safety override: `REVIT_HOST` is intentionally restricted to `localhost` / `127.0.0.1` by default. If you intentionally proxy a trusted remote Revit bridge, set `REVIT_ALLOW_REMOTE=1` explicitly.
+
+Before running model tools, call `revit_health_check` to confirm Claude can reach the loaded Revit addin.
 
 ## Features
 
@@ -138,7 +146,7 @@ The Revit API requires UI-thread access. The addin receives local HTTP requests,
 | --- | --- |
 | Autodesk Revit | 2026 |
 | Windows | 10 or 11 |
-| Node.js | 20 or newer |
+| Node.js | 20, 22, 24, or 25 |
 | .NET SDK | 8.x |
 | Claude | Claude Desktop, Claude Code, or another MCP client |
 
@@ -147,7 +155,8 @@ The Revit API requires UI-thread access. The addin receives local HTTP requests,
 ```text
 .
 ├─ mcp-server/                 # TypeScript MCP server
-│  └─ src/index.ts             # Tool definitions and bridge client
+│  ├─ src/index.ts             # MCP tool definitions
+│  └─ src/bridge.ts            # Local Revit HTTP bridge client and safety validation
 ├─ revit-addin/RevitMCP/       # C# Revit addin
 │  ├─ App.cs                   # Addin entry point
 │  ├─ RevitHttpServer.cs       # Localhost HTTP bridge
@@ -160,12 +169,13 @@ The Revit API requires UI-thread access. The addin receives local HTTP requests,
 
 ## Build Manually
 
-Build the MCP server:
+Build/test the MCP server:
 
 ```powershell
 cd mcp-server
 npm install
 npm run build
+npm test
 ```
 
 Build the Revit addin:
@@ -180,6 +190,8 @@ dotnet build -c Release
 Revit Claude MCP is a local bridge:
 
 - The addin listens on `localhost:6543`.
+- The MCP server blocks remote `REVIT_HOST` values unless `REVIT_ALLOW_REMOTE=1` is explicitly set for a trusted bridge.
+- Both the MCP server and the C# addin validate Revit action paths before dispatching work.
 - Do not expose the port to a network.
 - Use dry-run tools first when available.
 - Keep backups before bulk write operations.
@@ -189,6 +201,7 @@ Revit Claude MCP is a local bridge:
 | Problem | Fix |
 | --- | --- |
 | Claude cannot reach Revit | Make sure Revit is open, a model is loaded, and `http://localhost:6543/healthz` responds |
+| Need visible startup confirmation | Set `REVIT_MCP_SHOW_STARTUP_DIALOG=1` before launching Revit |
 | Addin does not load | Check `%APPDATA%\Autodesk\Revit\Addins\2026\` for `RevitMCP.addin` and `RevitMCP.dll` |
 | Build fails because RevitAPI.dll is missing | Update `HintPath` values in `revit-addin/RevitMCP/RevitMCP.csproj` |
 | Long operation times out | Increase `REVIT_TIMEOUT_MS` in the MCP config |

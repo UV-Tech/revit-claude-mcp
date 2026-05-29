@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Autodesk.Revit.UI;
 using Newtonsoft.Json;
@@ -16,6 +17,10 @@ namespace RevitMCP;
 public class RevitHttpServer
 {
     private const string Prefix = "http://localhost:6543/";
+    private const string ServiceName = "RevitMCP";
+    private const string ServiceVersion = "2.0.0";
+    private static readonly DateTime StartedUtc = DateTime.UtcNow;
+    private static readonly Regex SafeActionPattern = new("^[a-z0-9-]+(?:/[a-z0-9-]+)*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly TimeSpan QueueTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan RevitApiTimeout = TimeSpan.FromSeconds(120);
     private const long MaxRequestBytes = 2 * 1024 * 1024;
@@ -75,7 +80,17 @@ public class RevitHttpServer
 
             if (path == "/healthz")
             {
-                WriteJson(res, 200, new { ok = true, service = "RevitMCP" });
+                WriteJson(res, 200, new
+                {
+                    ok = true,
+                    service = ServiceName,
+                    version = ServiceVersion,
+                    startedUtc = StartedUtc.ToString("O"),
+                    uptimeSeconds = Math.Round((DateTime.UtcNow - StartedUtc).TotalSeconds, 3),
+                    queueTimeoutSeconds = QueueTimeout.TotalSeconds,
+                    revitApiTimeoutSeconds = RevitApiTimeout.TotalSeconds,
+                    maxRequestBytes = MaxRequestBytes
+                });
                 return;
             }
 
@@ -119,6 +134,12 @@ public class RevitHttpServer
             if (string.IsNullOrWhiteSpace(action))
             {
                 WriteJson(res, 400, new { error = "Missing Revit action in /api/<action>." });
+                return;
+            }
+
+            if (!SafeActionPattern.IsMatch(action))
+            {
+                WriteJson(res, 400, new { error = "Invalid Revit action. Expected lowercase path segments like 'model/info'." });
                 return;
             }
 
